@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ico/load.jpg</file>
+        <file>ico/load1.jpg</file>
+        <file>ico/sort.jpg</file>
+        <file>ico/sort1.png</file>
+        <file>ico/admin.png</file>
+        <file>ico/brows.png</file>
+        <file>ico/enter.png</file>
+        <file>ico/timg.jpg</file>
+        <file>ico/1.jpg</file>
+    </qresource>
+</RCC>
