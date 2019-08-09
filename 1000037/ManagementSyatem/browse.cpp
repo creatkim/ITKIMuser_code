@@ -8,32 +8,34 @@
 #include <QSqlQuery>    //sql语句
 #include <QVariantList>
 #include <QPushButton>
-
+#include "change.h"
+#include <QToolTip>
 Browse::Browse(int gro,QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Browse)
 {
     quanx =gro;
+     setFixedSize(1740,701);                     // 701禁止拖动窗口大小
     ui->setupUi(this);
     if(quanx==0)
     {
         qDebug()<<"管理员"<<quanx;
-        setFixedSize(1311,701);                     // 701禁止拖动窗口大小
+
     }else {
         qDebug()<<"普通用户"<<quanx;
-            setFixedSize(1311,637);                     // 701禁止拖动窗口大小
+            //setFixedSize(1311,637);                     // 701禁止拖动窗口大小
     }
     setWindowFlags(windowFlags()&~Qt::WindowMaximizeButtonHint);    // 禁止最大化按钮
 
     setWindowTitle("浏览");
     QSqlQuery query;
-    QString sql = "create table head(id int primary key, a varchar(45),b varchar(45),c varchar(45),d varchar(45),e varchar(45),f varchar(45),g varchar(45),h varchar(45),i varchar(45));";
+    QString sql = "create table head(id int primary key, a varchar(45),b varchar(45),c varchar(45),d varchar(45),e varchar(45),f varchar(45),g varchar(45),h varchar(45),i varchar(45),j varchar(45),k varchar(45));";
 
     if(query.exec(sql))
     {
         qDebug()<<"创建成功";
     }
-    sql = "insert into head(id,a, b, c,d,e,f,g,h,i) values(1,'单号','时间','电话','项目','地址','维修工','电话回访','录入员','备注');";
+    sql = "insert into head(id,a, b, c,d,e,f,g,h,i,j,k) values(1,'单号','时间','电话','项目','地址','维修工','电话回访','录入员','备注','收费','报价');";
     if(query.exec(sql))
     {
          qDebug()<<"插入成功";
@@ -44,9 +46,9 @@ Browse::Browse(int gro,QWidget *parent) :
     {
          qDebug()<<"查询成功";
     }
-
+    qDebug()<<"line 48";
     standItemModel = new QStandardItemModel();
-    standItemModel->setColumnCount(10);
+    standItemModel->setColumnCount(14);
     while(query.next())
     {
         standItemModel->setHeaderData(0,Qt::Horizontal,query.value("a").toString());   //设置表头内容
@@ -67,6 +69,10 @@ Browse::Browse(int gro,QWidget *parent) :
         ui->h->setText(query.value("h").toString());
         standItemModel->setHeaderData(8,Qt::Horizontal,query.value("i").toString());
         ui->i->setText(query.value("i").toString());
+        standItemModel->setHeaderData(9,Qt::Horizontal,query.value("j").toString());
+        ui->j->setText(query.value("j").toString());
+        standItemModel->setHeaderData(10,Qt::Horizontal,query.value("k").toString());
+        ui->k->setText(query.value("k").toString());
     }
 
     /*
@@ -80,41 +86,147 @@ Browse::Browse(int gro,QWidget *parent) :
     standItemModel->setHeaderData(7,Qt::Horizontal,QStringLiteral("录入员"));
     standItemModel->setHeaderData(8,Qt::Horizontal,QStringLiteral("备注"));
     */
-    standItemModel->setHeaderData(9,Qt::Horizontal,QStringLiteral("操作"));
+    if(quanx==0)
+    {
+        standItemModel->setHeaderData(13,Qt::Horizontal,QStringLiteral("操作"));
+    }
+
+    standItemModel->setHeaderData(12,Qt::Horizontal,QStringLiteral("修改"));
+     standItemModel->setHeaderData(11,Qt::Horizontal,QStringLiteral("标记"));
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);  //设置表格属性只读，不能编辑
     int count = landInfo();
     ui->tableView->setModel(standItemModel);    //挂载表格模型
+    ui->tableView->setMouseTracking(true);
+    connect(ui->tableView, SIGNAL(entered(QModelIndex)),
+    this, SLOT(showToolTip(QModelIndex)));
 
     for(int i=0;i<count;i++)
     {
-        QPushButton *m_PushButton=new QPushButton;
-        connect(m_PushButton,&QPushButton::clicked,
+        if(quanx==0)
+        {
+            QPushButton *m_PushButton=new QPushButton;
+            connect(m_PushButton,&QPushButton::clicked,
+                    [=]()
+                    {
+                        qDebug()<<i;
+
+                        QSqlQuery query;
+                        QString sql = QString("delete from ord where id = %1;").arg(numToId(i));
+                        if(query.exec(sql))
+                        {
+                            //从数据库中删除成功
+                            qDebug()<<"删除 "<<sql;
+                            QMessageBox::warning(this,QStringLiteral("提示"),QStringLiteral("删除成功"));
+                            standItemModel->removeRow(i);                               //删除从第0行开始的连续10行
+
+                        }else {
+                            //删除失败
+                            QMessageBox::warning(this,QStringLiteral("警告"),QStringLiteral("删除失败"));
+                        }
+
+
+                    }
+
+                    );
+            m_PushButton->setText(QStringLiteral("删除"));
+            ui->tableView->setIndexWidget(standItemModel->index(i,13),m_PushButton);    //向表格单元添加一个控件
+
+
+        }
+
+        //修改
+        QPushButton *PushButton=new QPushButton;
+        connect(PushButton,&QPushButton::clicked,
                 [=]()
                 {
-                    qDebug()<<i;
+                    Change *chan = new Change(this->numToId(i));
+                    chan->show();
+                }
 
-                    QSqlQuery query;
-                    QString sql = QString("delete from ord where id = %1;").arg(numToId(i));
-                    if(query.exec(sql))
+                );
+        PushButton->setText(QStringLiteral("修改"));
+        ui->tableView->setIndexWidget(standItemModel->index(i,12),PushButton);    //向表格单元添加一个控件
+
+
+        //标记
+
+
+
+
+        QPushButton *m_PushButton2=new QPushButton;
+        m_PushButton2->setText(QStringLiteral("点击改变"));
+        QSqlQuery query;
+        query.exec(QString("select color from ord where id = %1").arg(numToId(i)));
+        while(query.next())
+        {
+            if(query.value("color").toInt()==-1)
+            {
+                cou[i]=-1;
+            }else if(query.value("color").toInt()==0){
+                cou[i]=0;
+                m_PushButton2->setStyleSheet("background-color:rgb(255,0,0)");
+            }else if(query.value("color").toInt()==1){
+                cou[i]=1;
+                m_PushButton2->setStyleSheet("background-color:rgb(0,255,0)");
+            }else if(query.value("color").toInt()==2){
+                cou[i]=2;
+                m_PushButton2->setStyleSheet("background-color:rgb(0,0,255)");
+            }
+        }
+        ui->tableView->setIndexWidget(standItemModel->index(i,11),m_PushButton2);    //向表格单元添加一个控件
+
+        connect(m_PushButton2,&QPushButton::clicked,
+                [=]()
+                {
+            QString sql;
+                    qDebug()<<"点击修改"<<cou[i];
+                    if(cou[i]==-1)
                     {
-                        //从数据库中删除成功
-                        qDebug()<<"删除 "<<sql;
-                        QMessageBox::warning(this,QStringLiteral("提示"),QStringLiteral("删除成功"));
-                        standItemModel->removeRow(i);                               //删除从第0行开始的连续10行
-
-                    }else {
-                        //删除失败
-                        QMessageBox::warning(this,QStringLiteral("警告"),QStringLiteral("删除失败"));
+                         sql = QString("update ord set color = %1 where id = %2;").arg(-1).arg(numToId(i));
+                        cou[i]++;
                     }
+                    if(cou[i]==0)
+                    {
+                         m_PushButton2->setStyleSheet("background-color:rgb(255,0,0)");
+                          sql = QString("update ord set color = %1 where id = %2;").arg(0).arg(numToId(i));
+                          cou[i]++;
+                    }
+                    else if(cou[i]==1)
+                    {
+                         m_PushButton2->setStyleSheet("background-color:rgb(0,255,0)");
+                          sql = QString("update ord set color = %1 where id = %2;").arg(1).arg(numToId(i));
+                          cou[i]++;
+                    }else if (cou[i]==2) {
+                             m_PushButton2->setStyleSheet("background-color:rgb(0,0,255)");
+                              sql = QString("update ord set color = %1 where id = %2;").arg(2).arg(numToId(i));
+                             cou[i] =0;
+                    }
+                    QSqlQuery query;
+
+                   query.exec(sql);
+
+
+
 
 
                 }
 
                 );
-        m_PushButton->setText(QStringLiteral("删除"));
-        ui->tableView->setIndexWidget(standItemModel->index(i,9),m_PushButton);    //向表格单元添加一个控件
     }
+
+
+   // standItemModel.
+
 }
+
+void Browse::showToolTip(const QModelIndex &index) {
+if (!index.isValid()) {
+qDebug() << "Invalid index";
+return;
+}
+QToolTip::showText(QCursor::pos(), index.data().toString() + "\n");
+}
+
 int Browse::numToId(int num)
 {
     for(int i=0;i<idList.size();i++)
@@ -134,8 +246,12 @@ int Browse::numToId(int num)
 int Browse::landInfo()
 {
     //从数据库中加载订单
+     qDebug()<<"line 169";
     QSqlQuery query;
-    query.exec("select * from ord");
+    if(query.exec("select * from ord"))
+    {
+        qDebug()<<"line 173查询成功";
+    }
 
     int i=0;
     while(query.next()) //一行一行遍历
@@ -148,6 +264,7 @@ int Browse::landInfo()
         else {
             re = "有";
         }
+        qDebug()<<"line 184";
         ID *temp = new ID;
         temp->num = i;
         temp->id=query.value("id").toInt();
@@ -161,8 +278,11 @@ int Browse::landInfo()
         QStandardItem *standItem7 = new QStandardItem(tr("%1").arg(re));
         QStandardItem *standItem8 = new QStandardItem(tr("%1").arg(query.value("admin").toInt()));
         QStandardItem *standItem9 = new QStandardItem(tr("%1").arg(query.value("remark").toString()));
+        QStandardItem *standItem10 = new QStandardItem(tr("%1").arg(query.value("shufei").toInt()));
+        QStandardItem *standItem11 = new QStandardItem(tr("%1").arg(query.value("baojia").toInt()));
         standItemModel->setItem(i,0,standItem1);                                //表格第i行，第0列添加一项内容
-        //standItemModel->item(i,0)->setForeground(QBrush(QColor(255,0,0)));      //设置字符颜色
+        //standItemModel->setData()
+        //setColor__(0,1);
         standItemModel->item(i,0)->setTextAlignment(Qt::AlignCenter);           //设置表格内容居中
         standItemModel->setItem(i,1,standItem2);                                //表格第i行，第1列添加一项内容
         standItemModel->setItem(i,2,standItem3);
@@ -172,9 +292,12 @@ int Browse::landInfo()
         standItemModel->setItem(i,6,standItem7);
         standItemModel->setItem(i,7,standItem8);
         standItemModel->setItem(i,8,standItem9);
-        //QPushButton *m_PushButton=new QPushButton;
-       // m_PushButton->setText(QStringLiteral("删除"));
-       // ui->tableView->setIndexWidget(standItemModel->index(i,9),m_PushButton);    //向表格单元添加一个控件
+        standItemModel->setItem(i,9,standItem10);
+        standItemModel->setItem(i,10,standItem11);
+        qDebug()<<"line 212";
+
+
+
         i++;
     }
     return i;
@@ -183,7 +306,13 @@ Browse::~Browse()
 {
     delete ui;
 }
-
+void Browse::setColor__(int i, int color)
+{
+    for(int j=0;j<11;j++)
+    {
+        standItemModel->item(0,1)->setForeground(QBrush(QColor(255, 0, 0)));
+    }
+}
 void Browse::on_pushButton_clicked()
 {
     //修改表头
@@ -193,10 +322,12 @@ void Browse::on_pushButton_clicked()
 //            .arg(ui->a->text()).arg(ui->b->text()).arg(ui->c->text())
 //            .arg(ui->d->text()).arg(ui->e->text()).arg(ui->f->text())
 //            .arg(ui->g->text()).arg(ui->h->text()).arg(ui->i->text());
-    QString sql = QString("update head set a = '%1',b= '%2',c= '%3',d= '%4',e= '%5',f= '%6',g= '%7',h= '%8',i= '%9' where id = 1")
+    QString sql = QString("update head set a = '%1',b= '%2',c= '%3',d= '%4',e= '%5',f= '%6',g= '%7',h= '%8',i= '%9',j='%10',k='%11' where id = 1")
             .arg(ui->a->text()).arg(ui->b->text()).arg(ui->c->text())
                   .arg(ui->d->text()).arg(ui->e->text()).arg(ui->f->text())
-                  .arg(ui->g->text()).arg(ui->h->text()).arg(ui->i->text());
+                  .arg(ui->g->text()).arg(ui->h->text()).arg(ui->i->text())
+            .arg(ui->j->text()).arg(ui->k->text());
+    qDebug()<<sql;
     if(query.exec(sql))
     {
         QMessageBox::warning(this,QStringLiteral("提示"),QStringLiteral("修改成功\n重新打开此界面后显示"));

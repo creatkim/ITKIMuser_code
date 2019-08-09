@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    change.cpp \
         main.cpp \
         widget.cpp \
     landwidget.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
     database.cpp
 
 HEADERS += \
+    change.h \
         widget.h \
     landwidget.h \
     enter.h \
@@ -44,6 +46,7 @@ HEADERS += \
     database.h
 
 FORMS += \
+    change.ui \
         widget.ui \
     landwidget.ui \
     enter.ui \

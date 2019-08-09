@@ -31,53 +31,54 @@ void DataBase::initDataBase()
         return;
     }
     QSqlQuery query;
-    query.exec("select * from ord");
+//    query.exec("select * from ord");
 
 
-    while(query.next()) //一行一行遍历
-    {
-        //取出当前行内容
-        qDebug()<<"取";
-        qDebug()<< query.value("id").toInt()
-                << query.value("time").toString()
-                << query.value("telephone").toString()
-                << query.value("address").toString()
-                << query.value("workname").toString()
-                <<query.value("work").toString()
-               << query.value("retu").toInt()
-               <<query.value("remark").toString()
-              <<query.value("receipt").toString()
-             <<query.value("admin").toInt();
-     }
+//    while(query.next()) //一行一行遍历
+//    {
+//        //取出当前行内容
+//        qDebug()<<"取";
+//        qDebug()<< query.value("id").toInt()
+//                << query.value("time").toString()
+//                << query.value("telephone").toString()
+//                << query.value("address").toString()
+//                << query.value("workname").toString()
+//                <<query.value("work").toString()
+//               << query.value("retu").toInt()
+//               <<query.value("remark").toString()
+//              <<query.value("receipt").toString()
+//             <<query.value("admin").toInt();
+//     }
 
-    //query.exec("insert into user(id, name, password,gro) values(10002,'操作员','001221',1);");
-     //建表,用于开发时设计数据库，后期不需要执行
+//    //query.exec("insert into user(id, name, password,gro) values(10002,'操作员','001221',1);");
+//     //建表,用于开发时设计数据库，后期不需要执行
 
-    if(query.exec("create table user(id int primary key,name varchar(45),password varchar(45),gro int);"))
-    {
-         qDebug()<<"user jia建表成功";
-    }else {
-    qDebug()<<"line39 失败";
-    }
-    //
-    if(query.exec("create table ord(id int primary key,time varchar(20),telephone varchar(20),address varchar(100),workname varchar(100),work varchar(100),retu int,remark varchar(255),receipt varchar(255),admin int);"))
-    {
-         qDebug()<<"ord 建表成功";
-    }else {
-    qDebug()<<"line39 失败";
-    }
-    if(query.exec("insert into user(id, name, password,gro) values(10001,'管理员','001221',0);"))
-    {
-         qDebug()<<"插入账号成功";
-    }else {
-    qDebug()<<"插入账号失败";
-    }
-    //query.exec("");
-    //query.exec("");  //插入
-    //query.exec("");  //插入
+//    if(query.exec("create table user(id int primary key,name varchar(45),password varchar(45),gro int);"))
+//    {
+//         qDebug()<<"user jia建表成功";
+//    }else {
+//    qDebug()<<"line39 失败";
+//    }
+//    //
+//    if(query.exec("create table ord(id int primary key,time varchar(20),telephone varchar(20),address varchar(100),workname varchar(100),work varchar(100),retu int,remark varchar(255),receipt varchar(255),admin int,shufei int,baojia int,color int);"))
+//    {
+//         qDebug()<<"ord 建表成功";
+//    }else {
+//    qDebug()<<"line39 失败";
+//    }
+//    if(query.exec("insert into user(id, name, password,gro) values(888888,'管理员','123456',0);"))
+//    {
+//         qDebug()<<"插入账号成功";
+//    }else {
+//    qDebug()<<"插入账号失败";
+//    }
+   // query.exec("insert into ord(id) values(0);");
+//    //query.exec("");
+//    //query.exec("");  //插入
+//    //query.exec("");  //插入
 
-    //测试
-    //遍历数据库
+//    //测试
+//    //遍历数据库
 
 
 

@@ -203,6 +203,20 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>报价</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>收费</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QFrame" name="frame_3">
@@ -243,6 +257,12 @@
     </item>
     <item>
      <widget class="QLineEdit" name="reman"/>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="baojia"/>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="shufei"/>
     </item>
    </layout>
   </widget>

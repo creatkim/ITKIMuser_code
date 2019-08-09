@@ -14,6 +14,7 @@ Enter::Enter(QWidget *parent) :
     ui(new Ui::Enter)
 {
     ui->setupUi(this);
+    id = 1;
     setWindowFlags(windowFlags()&~Qt::WindowMaximizeButtonHint);    // 禁止最大化按钮
     setFixedSize(673,685);                     // 禁止拖动窗口大小
     setWindowTitle("录入");
@@ -107,6 +108,10 @@ void Enter::on_enter_clicked()
         ui->address->clear();
         temp.telephone = ui->usertele->text();
         ui->usertele->clear();
+        temp.shufei = ui->shufei->text().toInt();
+        ui->shufei->clear();
+        temp.baojia = ui->baojia->text().toInt();
+        ui->baojia->clear();
         ui->receipt->clear();
         ui->receipt->setText(QStringLiteral("此处显示收据图片"));
         //保存收据
@@ -119,9 +124,9 @@ void Enter::on_enter_clicked()
         temp.receipt = filename;
         //插入到数据库
         QSqlQuery query;
-        QString sql = QString("insert into ord(id,time,telephone,address,workname,work,retu,remark,receipt,admin) values(%1,'%2','%3','%4','%5','%6',%7,'%8','%9',%10);")
+        QString sql = QString("insert into ord(id,time,telephone,address,workname,work,retu,remark,receipt,admin,shufei,baojia,color) values(%1,'%2','%3','%4','%5','%6',%7,'%8','%9',%10,%11,%12,%13);")
                 .arg(temp.id).arg(temp.time).arg(temp.telephone).arg(temp.address).arg(temp.workname).arg(temp.work)
-                .arg(temp.retu).arg(temp.remark).arg(temp.receipt).arg(idactive);
+                .arg(temp.retu).arg(temp.remark).arg(temp.receipt).arg(idactive).arg(temp.shufei).arg(temp.baojia).arg(-1);
 
         if(query.exec(sql))
         {

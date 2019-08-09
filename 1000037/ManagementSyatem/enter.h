@@ -17,6 +17,9 @@ typedef struct{
     QString remark; //备注
     QString receipt;    //收据
     int admin;
+    int baojia;
+    int shufei;
+    int color;
 }Order;
 class Enter : public QWidget
 {
